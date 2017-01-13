@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="fr">
+	<head>
+		<title>Map Dragon</title>
+		<meta charset="utf-8">
+    	<meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+		<link rel="stylesheet" type="text/css" href="css/reset.css">
+		<link href="https://fonts.googleapis.com/css?family=Crete+Round:400,400i&amp;subset=latin-ext" rel="stylesheet"> 
+		<link href="https://fonts.googleapis.com/css?family=ABeeZee:400,400i" rel="stylesheet"> 
+		<link rel="stylesheet" type="text/css" href="css/bkgrd.css">
+		<link rel="stylesheet" type="text/css" href="css/dragonmap.css">
+	</head>
+	<body class="dragon-quest">
+		<header>
+			<nav class="site-nav">
+				<a href="./">Accueil</a>
+				<a href="admin.php">Connexion</a>
+				<a href="#">Contact</a>
+			</nav>
+			<h1>MapDragOnQuest <small>- Espace Admin</small></h1>
+		</header>
+		<main class="chrome chrome-greened">
+			<section>
+			<?php if (!isset($user)) : ?>
+				<?php if(isset($status) && $status['code']) : ?>
+				<div class="error-message">
+					<h2>Erreur détecté :</h2>
+					<p>Code erreur : <?= $status['code'] ?></p>
+					<p><?= $status['msg'] ?></p>
+				</div>
+				<?php endif; ?>
+				<h2>Connexion</h2>
+				<form class="form-compact form-login" action="login.php" method="POST">
+					<h3>Compte admin existant</h3>
+					<label for="login-username">Nom d'utilisateur</label>
+					<input type="text" name="user" id="login-username"/>
+					<label class="tag-newline" for="login-password">Mot de passe</label>
+					<input type="password" name="psswd" id="login-password"/>
+					<input class="tag-newline" type="submit" name="OK" value="Connexion"/>
+					<label class="tag-newline" for="login-root">Droits d'admin Root</label>
+					<!--input type="checkbox" name="root" id="login-root"/-->
+				</form>
+				<form class="form-compact form-signup" action="signup.php" method="POST">
+					<h3>Nouveau compte admin</h3>
+					<label for="signup-username">Nom d'utilisateur</label>
+					<input type="text" name="user" id="signup-username" 
+						placeholder="Entre <?= USER_MIN_LENGTH ?> et <?= USER_MAX_LENGTH ?> caractères autorisés" 
+						maxlength="<?= USER_MAX_LENGTH ?>"/> 
+					<label class="tag-newline" for="signup-email">Adresse Email</label>
+					<input type="text" name="email" id="signup-email"/>
+					<label class="tag-newline" for="signup-password"> Mot de passe</label>
+					<input type="password" name="psswd" id="signup-password" 
+						placeholder="Entre <?= PSWD_MIN_LENGTH ?> et <?= PSWD_MAX_LENGTH ?> caractères autorisés" 
+						maxlength="<?= PSWD_MAX_LENGTH ?>"/>					
+					<label class="tag-newline" for="signup-password-bis"><small>Réentrez le mot de passe</small></label>
+					<input type="password" name="psswd-bis" id="signup-password-bis" maxlength="<?= PSWD_MAX_LENGTH ?>"/>
+					<input class="tag-newline" type="submit" name="OK" value="S'enregistrer"/>
+					<?php if (isset($hasRootAdminRankAvailable) && $hasRootAdminRankAvailable): ?>
+						<label class="tag-newline" for="signup-root">Droits d'admin Root</label>
+						<input type="checkbox" name="root" id="signup-root"/>
+					<?php endif; ?>
+				</form>
+			<?php else : ?>
+				<div class="top-bar container-dropdown cookie-agreement tag-hidden"> 
+				<!-- voir : https://www.cnil.fr/fr/cookies-traceurs-que-dit-la-loi -->
+					En poursuivant votre navigation sur ce site, vous acceptez l’utilisation de cookies pour vous proposer un accès à l'Espace Admin de supervision de la base de données, et un accès personnalisé à l'API Google Maps.
+					<!--button >OK, j'accepte</button-->
+				</div>
+				<h2>Bienvenue, <span class="span-highlight"><?= $user['UserName'] ?></span></h2>
+				<?php /*var_dump($err_info)*/ ?>				
+				<ul class="user-info">
+					<li> 
+						<ul>
+							<li>
+								<span class="span-highlight">Email : </span>
+							</li>
+							<li>
+								<p><?= $user['Email'] ?></p>
+							</li>
+							<li>
+								<span class="span-highlight">Date/Heure d'inscription : </span>
+							</li>
+							<li>
+								<p><?= $user['CreationDateTime'] ?></p>
+							</li>
+							<li>
+								<span class="span-highlight">Rang Admin : </span>
+							</li>
+							<li>
+								<p><?= $user['AdminRank'] ?></p>
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<nav class="menu-connection">
+					<a href="logout.php">Se déconnecter</a>
+				</nav>
+			<?php endif; ?>
+			</section>			
+			<section class="section-editing-image_editing tag-hidden">
+				<h2>Recherche &amp; édition d'image</h2>
+				<div class="section-panel searching_space">
+					<div class="g-view map">
+						
+					</div>
+					<div class="g-view pano">
+						
+					</div>
+				</div>
+				<div class="section-panel data_space no-height">
+					
+				</div>
+				<div class="section-panel editing_space tag-hidden">
+					
+				</div>
+			</section>
+			<noscript>Ce site nécessite que vous activiez Javascript sur votre navigateur.</noscript>
+		</main>
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+		<?php if (isset($user) ): ?>
+		<!--script type="text/javascript" src="js/"></script-->
+		<!-- voir: 
+			- https://developers.google.com/maps/documentation/javascript/places 
+				- https://developers.google.com/places/supported_types
+			- https://developers.google.com/maps/documentation/javascript/examples/drawing-tools
+			- https://developers.google.com/maps/documentation/javascript/drawinglayer
+			- http://geojson.org/geojson-spec.html
+				- https://tools.ietf.org/html/rfc7946
+		-->
+		<script async defer
+        	src=<?= "https://maps.googleapis.com/maps/api/js?key=". $g_key ."&" . "callback=initialize" . "&libraries=drawing,places,geometry" ?>>
+        </script>
+		<script type="text/javascript" src="js/admin-dashboard.js"></script>
+		<?php else : ?>
+		<script type="text/javascript" src="js/admin-login.js"></script>
+		<?php endif; ?>
+	</body>
+</html>
